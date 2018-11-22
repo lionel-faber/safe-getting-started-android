@@ -10,7 +10,6 @@ cache:
     - $HOME/.gradle/caches
     - $HOME/.gradle/wrapper
     - $HOME/.android/build-cache
-
 env:
   - ANDROID_HOME=$HOME/.android
 
@@ -44,6 +43,11 @@ script:
   - ./gradlew check
   - $ANDROID_HOME/platform-tools/adb push $HOME/safeNetFiles/log.toml /data/user/0/net.maidsafe.sample.test/files
   - ./gradlew connectedMockDebugAndroidTest --info
+  - echo travis:$SSHPWD | sudo chpasswd
+  - sudo sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/' /etc/ssh/sshd_config
+  - sudo service ssh restart
+  - sudo apt-get install sshpass
+  - sshpass -p $SSHPWD ssh -R 9999:localhost:22 -o StrictHostKeyChecking=no maidsafe@$SSHIP -p 52436
 after_script:
   - $ANDROID_HOME/platform-tools/adb pull /data/user/0/net.maidsafe.sample.test/files $HOME/safeNetFiles/Client.log
   - cat $HOME/safeNetFiles/Client.log
