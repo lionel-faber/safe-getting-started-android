@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 import android.system.Os;
 import android.util.Log;
 
+import net.maidsafe.api.Session;
 import net.maidsafe.sample.model.Task;
 import net.maidsafe.sample.model.TodoList;
 import net.maidsafe.sample.services.ITodoService;
@@ -29,6 +30,13 @@ public class ServicesTest {
         service = new SafeTodoService(InstrumentationRegistry.getContext());
         File mockVaultDir = new File(Os.getenv("SAFE_MOCK_VAULT_PATH"));
         mockVaultDir.mkdir();
+        mockVaultDir.setWritable(true);
+        try {
+            Session.setAdditionalSearchPath(mockVaultDir.getPath()).get();
+            Session.initLogging("Client.log").get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         onDisconnected = () -> {
           Log.d("STAGE:", "Disconnected from the Network");
         };

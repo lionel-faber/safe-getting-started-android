@@ -20,6 +20,8 @@ before_install:
   - chmod +x gradlew
   - mkdir -p $HOME/.android
   - mkdir -p $ANDROID_HOME/licenses
+  - mkdir -p $HOME/safeNetFiles
+  - wget -O $HOME/safeNetFiles/log.toml https://raw.githubusercontent.com/maidsafe/safe_app_csharp/master/SafeApp.Tests/log.toml
   - echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
   - echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_HOME/licenses/android-sdk-license
 install:
@@ -36,8 +38,12 @@ before_script:
   - $ANDROID_HOME/tools/emulator -avd test -no-window -no-audio &
   - chmod +x ./android-wait-for-emulator
   - ./android-wait-for-emulator
-  - $ANDROID_HOME/platform_tools/adb shell input keyevent 82 &
+  - $ANDROID_HOME/platform-tools/adb shell input keyevent 82 &
 script:
   - chmod +x gradlew
   - ./gradlew check
-  - ./gradlew connectedMockDebugAndroidTest
+  - $ANDROID_HOME/platform-tools/adb push $HOME/safeNetFiles/log.toml /data/user/0/net.maidsafe.sample.test/files
+  - ./gradlew connectedMockDebugAndroidTest --info
+after_script:
+  - $ANDROID_HOME/platform-tools/adb pull /data/user/0/net.maidsafe.sample.test/files $HOME/safeNetFiles/Client.log
+  - cat $HOME/safeNetFiles/Client.log
